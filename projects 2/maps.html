@@ -1,0 +1,471 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste Collection and Calculator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+	        :root {
+            --primary: #2C5F2D;
+            --primary-dark: #1a4a1b;
+            --secondary: #97BC62;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+            --accent: #FF6B6B;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+	#header img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s ease-in-out; /* Ensure smooth transition between images */
+}
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+	        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Enhanced Navigation */
+        nav {
+            background-color: rgba(44, 95, 45, 0.95);
+            padding: 1.5rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 1rem;
+            background-color: rgba(44, 95, 45, 0.98);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        #header {
+            width: 100%;
+            height: 700px;
+            overflow: hidden;
+            position: relative;
+        }
+        #header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+	    border-radius:10px;
+        }
+        #info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        #map { 
+            height: 500px; 
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        #calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #27ae60;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #2ecc71;
+            transform: scale(1.1);
+        }
+        #result {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+	input, button, select {
+            padding: 10px;
+            margin: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            border-color: #27ae60;
+            outline: none;
+            box-shadow: 0 0 5px rgba(39, 174, 96, 0.5);
+        }
+        
+        select {
+            background-color: #fff;
+            color: #333;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 30px; /* Space for custom arrow */
+            font-size: 16px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            background-image: url('https://cdn.iconscout.com/icon/premium/png-256-thumb/dropdown-arrow-1831617-1554475.png');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+        }
+
+        select:hover {
+            background-color: #f1f1f1;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #2ecc71;
+            transform: scale(1.1);
+        }
+        
+        #result {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        /* Added a nice transition effect */
+        input, button, select {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+	 <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                E-Waste Awareness
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="crisis.html">Crisis</a></li>
+		<li><a href="maps.html">Resources</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="header">
+        <img src="pic/Freepik_ baixe gratuitamente vídeos, vetores, fotos e PSDs.jpg" class="slide" alt="Image 6 - E-waste Management">
+        <img src="pic/Green Tech Revolution_ Transforming E-Waste into Opportunity with ITAD.jpg" class="slide" alt="Image 6 - E-waste Management">
+        <img src="pic/e-waste.jpg" class="slide" alt="Image 5 - E-waste Recycling Centers">
+        <img src="pic/Radiation Awareness 3.jpg" class="slide" alt="Image 6 - E-waste Management">
+        <img src="pic/download (1).jpg" class="slide" alt="Image 1 - E-waste Disposal">
+        <img src="pic/download (2).jpg" class="slide" alt="Image 2 - E-waste Collection">
+        <img src="pic/Electronic Components Art.jpg" class="slide" alt="Image 3 - Recycling Process">
+        <img src="pic/E waste management and recycling becomes a major concern _ Premium AI-generated image.jpg" class="slide" alt="Image 4 - E-waste Landfills">
+        <img src="pic/robot parents.jpg" class="slide" alt="Image 6 - E-waste Management">
+        <img src="pic/A Doctor's New Assistant_ Robots Performing Complex Surgeries.jpg" class="slide" alt="Image 6 - E-waste Management">
+    </div>
+    
+    <h1>E-Waste in Uganda: A Growing Crisis</h1>
+    <div id="info">
+        <p>Uganda generates an estimated 17,000 to 45,000 tonnes of e-waste annually. The improper disposal of electronic waste poses serious environmental and health risks. Toxic substances such as lead, mercury, and cadmium can leach into the soil and water, causing long-term damage.</p>
+        <p>If no action is taken, Uganda will face severe consequences including pollution, water contamination, and increased health risks like respiratory diseases and cancer. Sustainable e-waste management is crucial to protect our environment and future generations.</p>
+    </div>
+    
+    <h2>E-Waste Collection Centers in Uganda</h2>
+    <div id="map"></div>
+    
+    <h2>E-Waste Recycling Calculator</h2>
+    <div id="calculator">
+        <label for="devices">Enter number of devices to recycle:</label>
+        <input type="number" id="devices" min="1" placeholder="Enter number of devices" />
+        
+        <label for="deviceType">Select device type:</label>
+        <select id="deviceType">
+            <option value="mobile">Mobile Phone</option>
+            <option value="laptop">Laptop</option>
+            <option value="tv">Television</option>
+            <option value="desktop">Desktop Computer</option>
+        </select>
+
+        <button onclick="calculateRecycling()">Calculate</button>
+        <p id="result"></p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([1.3733, 32.2903], 7); // Centered on Uganda
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // E-waste collection centers (example locations)
+        var locations = [
+            { name: "Kampala E-Waste Collection Center", lat: 0.3476, lng: 32.5825 },
+            { name: "Nakasongola E-Waste Facility", lat: 1.3087, lng: 32.4563 },
+            { name: "Mbarara E-Waste Recycling Center", lat: -0.5967, lng: 30.6465 },
+            { name: "Gulu E-Waste Center", lat: 2.7743, lng: 32.2980 },
+            { name: "Mbale E-Waste Collection Facility", lat: 1.0737, lng: 34.1790 },
+            { name: "Jinja E-Waste Management Center", lat: 0.6023, lng: 33.1895 },
+            { name: "Kabarole E-Waste Recycling", lat: 0.6787, lng: 30.2630 },
+            { name: "Lira E-Waste Collection Facility", lat: 2.2495, lng: 32.9023 }
+        ];
+
+        locations.forEach(function(location) {
+            var marker = L.marker([location.lat, location.lng]).addTo(map)
+                .bindPopup("<b>" + location.name + "</b>");
+            
+            marker.on('mouseover', function(e) {
+                this.openPopup();
+            });
+            marker.on('mouseout', function(e) {
+                this.closePopup();
+            });
+        });
+
+        function calculateRecycling() {
+            var devices = document.getElementById('devices').value;
+            var deviceType = document.getElementById('deviceType').value;
+            var weight = 0;
+
+            if (!devices || devices <= 0) {
+                document.getElementById('result').innerText = "Please enter a valid number of devices.";
+                return;
+            }
+
+            switch (deviceType) {
+                case 'mobile':
+                    weight = devices * 0.3; // Mobile phone weighs 0.3 kg
+                    break;
+                case 'laptop':
+                    weight = devices * 1.5; // Laptop weighs 1.5 kg
+                    break;
+                case 'tv':
+                    weight = devices * 3; // TV weighs 3 kg
+                    break;
+                case 'desktop':
+                    weight = devices * 4; // Desktop weighs 4 kg
+                    break;
+                default:
+                    weight = devices * 0.5; // Default weight for an unspecified device
+                    break;
+            }
+
+            document.getElementById('result').innerText = "Estimated e-waste recycled: " + weight + " kg";
+        }
+
+        let index = 0;
+        const slides = document.querySelectorAll(".slide");
+        function showSlides() {
+            slides.forEach((slide, i) => {
+                slide.style.opacity = i === index ? "1" : "0";
+            });
+            index = (index + 1) % slides.length;
+            setTimeout(showSlides, 4000);
+        }
+        showSlides();
+    </script>
+ <!-- New Footer Section -->
+    <footer class="footer">
+        <style>
+            .footer {
+                background: var(--dark);
+                color: white;
+                padding: 4rem 2rem;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 3rem;
+            }
+
+            .footer-section h3 {
+                color: var(--secondary);
+                margin-bottom: 1.5rem;
+            }
+
+            .footer-links {
+                list-style: none;
+            }
+
+            .footer-links li {
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-links a {
+                color: white;
+                text-decoration: none;
+                opacity: 0.8;
+                transition: all 0.3s ease;
+            }
+
+            .footer-links a:hover {
+                opacity: 1;
+                color: var(--secondary);
+            }
+
+            .social-links {
+                display: flex;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .social-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+            }
+
+            .social-icon:hover {
+                background: var(--secondary);
+                transform: translateY(-3px);
+            }
+
+            .footer-bottom {
+                margin-top: 3rem;
+                padding-top: 2rem;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                text-align: center;
+                opacity: 0.8;
+            }
+        </style>
+
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Us</h3>
+                <p>Working towards a sustainable future through proper e-waste management and environmental conservation in South Africa.</p>
+                <div class="social-links">
+                   <a href="https://github.com/ANONYMOUSx46" class="social-icon">
+       			<svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+            		<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      			</svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">About the Crisis</a></li>
+                    <li><a href="#">Our Solutions</a></li>
+                    <li><a href="#cta-title">Get Involved</a></li>
+                    <li><a href="maps.html">Resources</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <ul class="footer-links">
+                    <li>📍 Kampala, Uganda</li>
+                    <li>📧 contact email: seggayiezekiel95@gmail.com</li>
+                    <li>📞 +256 701 995 460</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 E-Waste Awareness. Created by Ssegayi Ezekiel. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
